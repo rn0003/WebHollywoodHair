@@ -1,0 +1,19 @@
+{
+  "name": "hollywood-booking",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Hollywood Hair Salon booking page with live availability from a CalDAV (Yahoo) calendar",
+  "type": "module",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "dev": "vercel dev",
+    "test": "node --test test/*.test.js"
+  },
+  "dependencies": {
+    "ical.js": "^2.1.0",
+    "luxon": "^3.5.0",
+    "tsdav": "^2.1.2"
+  }
+}

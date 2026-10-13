@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Book an appointment · Hollywood Hair Salon</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,400..700;1,6..96,400..700&amp;family=Manrope:wght@400;500;600;700&amp;display=swap">
+<link rel="stylesheet" href="/book.css">
+<script src="/book.js" defer></script>
+</head>
+<body>
+<header class="wrap top">
+  <a class="brand" href="/">
+    <span class="brand-name">Hollywood</span>
+    <span class="brand-sub">Hair Salon</span>
+  </a>
+  <a href="/">Back to site</a>
+</header>
+
+<main class="wrap layout">
+  <div class="steps">
+    <h1>Book your <em>chair.</em></h1>
+
+    <fieldset>
+      <legend>1 · Service</legend>
+      <div id="services" class="grid-services"></div>
+    </fieldset>
+
+    <fieldset>
+      <legend>2 · Stylist</legend>
+      <div id="stylists" class="row"></div>
+    </fieldset>
+
+    <fieldset>
+      <legend>3 · Day</legend>
+      <div id="days" class="grid-days"></div>
+    </fieldset>
+
+    <fieldset>
+      <legend>4 · Time</legend>
+      <div id="times" class="row" aria-live="polite"></div>
+      <p class="hint">
+        <svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="10" rx="2"></rect><path d="M8 11V8a4 4 0 0 1 8 0v3"></path></svg>
+        Crossed-out times are already taken. Openings come straight from the salon’s calendar.
+      </p>
+    </fieldset>
+  </div>
+
+  <aside class="summary">
+    <h2>Your appointment</h2>
+    <dl>
+      <div><dt>Service</dt><dd id="sum-service">–</dd></div>
+      <div><dt>Stylist</dt><dd id="sum-stylist">–</dd></div>
+      <div><dt>When</dt><dd id="sum-when">Pick a day and time</dd></div>
+      <div><dt>Starting at</dt><dd id="sum-price" class="accent">–</dd></div>
+    </dl>
+
+    <form id="book-form" novalidate>
+      <label>Name
+        <input name="name" type="text" autocomplete="name" maxlength="80" required>
+      </label>
+      <label>Phone
+        <input name="phone" type="tel" autocomplete="tel" maxlength="24" required>
+      </label>
+      <label>Notes <span class="optional">(optional)</span>
+        <textarea name="notes" maxlength="300" rows="2"></textarea>
+      </label>
+      <div class="hp" aria-hidden="true">
+        <label>Website <input name="website" type="text" tabindex="-1" autocomplete="off"></label>
+      </div>
+      <div id="turnstile"></div>
+      <button id="confirm" type="submit" disabled>Confirm booking</button>
+      <p id="form-error" class="error" role="alert"></p>
+      <p class="fine">Free cancellation up to [24] hours before. Final price confirmed at consultation.</p>
+    </form>
+
+    <div id="done" class="done" hidden>
+      <p class="done-title">You’re booked.</p>
+      <p id="done-text"></p>
+      <button id="again" type="button">Book another</button>
+    </div>
+  </aside>
+</main>
+</body>
+</html>
