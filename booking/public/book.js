@@ -1,6 +1,22 @@
 // Booking page. All text from the server is inserted with textContent, never as HTML.
 (() => {
   const $ = (id) => document.getElementById(id);
+  const PHONE_RE = /^[2-9]\d{2}-[2-9]\d{2}-\d{4}$/;
+
+  // Formats typed or pasted digits as xxx-xxx-xxxx, keeping the caret after the same digit.
+  function formatPhone(input) {
+    const digitsBeforeCaret = input.value.slice(0, input.selectionStart ?? input.value.length).replace(/\D/g, '').length;
+    let digits = input.value.replace(/\D/g, '');
+    if (digits.length > 10 && digits[0] === '1') digits = digits.slice(1); // drop +1 country code
+    digits = digits.slice(0, 10);
+    const out = [digits.slice(0, 3), digits.slice(3, 6), digits.slice(6)].filter(Boolean).join('-');
+    input.value = out;
+    let pos = 0;
+    for (let seen = 0; pos < out.length && seen < digitsBeforeCaret; pos++) if (/\d/.test(out[pos])) seen++;
+    input.setSelectionRange(pos, pos);
+    if (PHONE_RE.test(out) || out === '') input.removeAttribute('aria-invalid');
+  }
+
   const state = { info: null, service: null, stylist: 0, date: null, start: null, label: null, request: 0 };
 
   function el(tag, className, children = []) {
@@ -59,7 +75,7 @@
       const data = await r.json();
       if (ticket !== state.request) return; // a newer request superseded this one
       if (!r.ok) return status(data.error || 'Couldn’t load times.');
-      if (!data.slots.length) return status('No appointments this day.');
+      if (!data.slots.length) return status('No openings left this day for this service. Please try another day.');
       $('times').replaceChildren(...data.slots.map((s) => {
         const b = chip('pill', false, () => {
           state.start = s.start;
@@ -67,13 +83,8 @@
           for (const other of $('times').children) other.setAttribute('aria-pressed', String(other === b));
           renderSummary();
         }, [s.label]);
-        b.disabled = !s.available;
-        if (!s.available) b.setAttribute('aria-label', `${s.label}, already booked`);
         return b;
       }));
-      if (!data.slots.some((s) => s.available)) {
-        $('times').append(el('p', 'status', ['Fully booked. Try another day.']));
-      }
     } catch {
       if (ticket === state.request) status('Couldn’t reach the salon calendar. Please try again or call us.');
     }
@@ -116,7 +127,11 @@
     const fd = new FormData(form);
     $('form-error').textContent = '';
     if (String(fd.get('name') || '').trim().length < 2) return ($('form-error').textContent = 'Please enter your name.');
-    if (String(fd.get('phone') || '').replace(/\D/g, '').length < 7) return ($('form-error').textContent = 'Please enter a valid phone number.');
+    if (!PHONE_RE.test(String(fd.get('phone') || ''))) {
+      $('phone').setAttribute('aria-invalid', 'true');
+      $('phone').focus();
+      return ($('form-error').textContent = 'Please enter your phone number as xxx-xxx-xxxx, e.g. 312-555-0147.');
+    }
 
     $('confirm').disabled = true;
     $('confirm').textContent = 'Booking…';
@@ -164,10 +179,12 @@
     } catch {
       return status('Online booking is unavailable right now. Please call the salon.');
     }
-    state.service = state.info.services[0]?.id ?? null;
+    const wanted = new URLSearchParams(location.search).get('service');
+    state.service = state.info.services.some((s) => s.id === wanted) ? wanted : (state.info.services[0]?.id ?? null);
     state.date = state.info.days.find((d) => d.open)?.date ?? null;
     if (state.info.turnstileSiteKey) loadTurnstile(state.info.turnstileSiteKey);
     $('book-form').addEventListener('submit', submit);
+    $('phone').addEventListener('input', (e) => formatPhone(e.target));
     $('again').addEventListener('click', () => {
       $('book-form').reset();
       $('book-form').hidden = false;

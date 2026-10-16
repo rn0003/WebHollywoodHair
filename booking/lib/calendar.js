@@ -7,8 +7,6 @@ import { DateTime } from 'luxon';
 import { randomUUID } from 'node:crypto';
 import { buildEvent } from './ics.js';
 
-const CACHE_MS = 60_000;
-const cache = new Map();
 let clientPromise = null;
 let calendarPromise = null;
 
@@ -37,10 +35,12 @@ async function getCalendar() {
       const calendars = await client.fetchCalendars();
       const wanted = process.env.CALENDAR_NAME;
       const withEvents = calendars.filter((c) => !c.components || c.components.includes('VEVENT'));
-      const calendar = wanted
-        ? calendars.find((c) => String(c.displayName || '').trim() === wanted.trim())
-        : withEvents[0];
-      if (!calendar) throw new Error(wanted ? `Calendar "${wanted}" not found` : 'No event calendar found');
+      const norm = (v) => String(v || '').replace(/\s+/g, '').toLowerCase();
+      const calendar = wanted ? calendars.find((c) => norm(c.displayName) === norm(wanted)) : withEvents[0];
+      if (!calendar) {
+        const names = calendars.map((c) => JSON.stringify(String(c.displayName || ''))).join(', ');
+        throw new Error(wanted ? `Calendar "${wanted}" not found. Calendars on this account: ${names}` : 'No event calendar found');
+      }
       return { client, calendar };
     })().catch((err) => {
       calendarPromise = null;
@@ -112,19 +112,15 @@ export function parseBusy(icsDocuments, rangeStart, rangeEnd, timezone) {
   return busy;
 }
 
-export async function getBusy(rangeStart, rangeEnd, timezone, { fresh = false } = {}) {
-  const key = `${rangeStart.toISOString()}|${rangeEnd.toISOString()}`;
-  const hit = cache.get(key);
-  if (!fresh && hit && Date.now() - hit.at < CACHE_MS) return hit.busy;
-
+// Always read live: Vercel runs several server copies, so a per-copy cache could show a
+// just-booked time as free on another copy. Rate limits in the API routes protect Yahoo.
+export async function getBusy(rangeStart, rangeEnd, timezone) {
   const { client, calendar } = await getCalendar();
   const objects = await client.fetchCalendarObjects({
     calendar,
     timeRange: { start: rangeStart.toISOString(), end: rangeEnd.toISOString() },
   });
-  const busy = parseBusy(objects.map((o) => o.data).filter(Boolean), rangeStart, rangeEnd, timezone);
-  cache.set(key, { at: Date.now(), busy });
-  return busy;
+  return parseBusy(objects.map((o) => o.data).filter(Boolean), rangeStart, rangeEnd, timezone);
 }
 
 export async function createAppointment({ start, end, summary, description }) {
@@ -136,6 +132,5 @@ export async function createAppointment({ start, end, summary, description }) {
     iCalString: buildEvent({ uid, start, end, summary, description }),
   });
   if (!res.ok) throw new Error(`Calendar refused the appointment (HTTP ${res.status})`);
-  cache.clear();
   return uid;
 }

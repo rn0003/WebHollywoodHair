@@ -74,7 +74,17 @@ test('client text cannot inject calendar properties', () => {
 
 test('input cleaning', () => {
   assert.equal(cleanText('  Ann\u0000\n  Lee ', 80), 'Ann Lee');
-  assert.ok(validPhone('(555) 123-4567'));
-  assert.ok(!validPhone('call me'));
-  assert.ok(!validPhone('123'));
+  assert.ok(validPhone('312-555-0147'));
+  for (const bad of ['(312) 555-0147', '3125550147', '312 555 0147', '+1-312-555-0147', '312-555-014',
+    '312-555-01478', '112-555-0147', '312-155-0147', '312-555-0147\n', 'call me', '', null]) {
+    assert.ok(!validPhone(bad), `rejects ${JSON.stringify(bad)}`);
+  }
+});
+
+test('weekly hours for display', async () => {
+  const { weeklyHours } = await import('../lib/slots.js');
+  const rows = weeklyHours(cfg, NOW); // NOW is a Sunday in LA
+  assert.equal(rows.length, 7);
+  assert.deepEqual(rows[0], { day: 'Monday', time: '9:00 AM – 12:00 PM', today: false });
+  assert.deepEqual(rows[6], { day: 'Sunday', time: 'Closed', today: true });
 });

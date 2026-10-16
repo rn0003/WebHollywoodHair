@@ -4,7 +4,7 @@
 export const config = {
   timezone: process.env.SALON_TIMEZONE || 'America/Los_Angeles',
   slotStepMin: 30, // how often a start time is offered
-  bufferMin: 10, // clean-up gap kept free around every appointment
+  bufferMin: 0, // minutes kept free before and after every appointment (0 = back-to-back allowed)
   leadTimeMin: 120, // earliest booking is this many minutes from now
   horizonDays: 30, // how far ahead clients can book
   daysShown: 14, // days listed on the booking page
@@ -23,12 +23,12 @@ export const config = {
 
   // TODO: replace prices and check durations.
   services: [
-    { id: 'cut', name: 'Cut & Style', minutes: 60, price: '[$]' },
-    { id: 'color', name: 'Color', minutes: 90, price: '[$]' },
-    { id: 'balayage', name: 'Balayage', minutes: 180, price: '[$]' },
-    { id: 'blowout', name: 'Blowout', minutes: 45, price: '[$]' },
-    { id: 'bridal', name: 'Bridal & Events consult', minutes: 30, price: '[$]' },
-    { id: 'treatment', name: 'Treatments', minutes: 30, price: '[$]' },
+    { id: 'cut', name: 'Cut & Style', minutes: 60, price: '[$]', desc: 'Consultation, wash, precision cut and a finished blowout.' },
+    { id: 'color', name: 'Color', minutes: 90, price: '[$]', desc: 'Single-process, gloss or root touch-up, matched to your skin tone.' },
+    { id: 'balayage', name: 'Balayage', minutes: 180, price: '[$]', desc: 'Hand-painted, lived-in lightness with a toner and style.' },
+    { id: 'blowout', name: 'Blowout', minutes: 45, price: '[$]', desc: 'Wash and a smooth, lasting blowout for any occasion.' },
+    { id: 'bridal', name: 'Bridal & Events consult', minutes: 30, price: '[$]', desc: 'Updos and styling for the day, with a trial beforehand.' },
+    { id: 'treatment', name: 'Treatments', minutes: 30, price: '[$]', desc: 'Bond repair, deep conditioning and scalp care.' },
   ],
 
   // All stylists currently share one calendar; the choice is written into the appointment.

@@ -61,6 +61,8 @@ dd { margin: 0; text-align: right; }
 form { display: flex; flex-direction: column; gap: 14px; }
 label { display: flex; flex-direction: column; gap: 6px; font-size: 14px; color: #c9bfb5; }
 .optional { color: var(--faint); }
+.field-hint { font-size: 13px; color: var(--faint); }
+input[aria-invalid="true"] { border-color: #f2a5a0; }
 input, textarea { min-height: 48px; padding: 12px 14px; border-radius: 12px; border: 1px solid #4a403c; background: var(--ink); color: var(--text); font: inherit; resize: vertical; }
 .hp { position: absolute; left: -10000px; width: 1px; height: 1px; overflow: hidden; }
 #confirm { min-height: 52px; border-radius: 999px; border: 0; font: inherit; font-weight: 700; font-size: 16px; background: var(--accent); color: var(--ink); cursor: pointer; }

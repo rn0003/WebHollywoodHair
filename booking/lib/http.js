@@ -46,8 +46,10 @@ export function cleanText(value, max) {
   return value.replace(CONTROL, ' ').replace(/\s+/g, ' ').trim().slice(0, max);
 }
 
+// US/Canada number in exactly xxx-xxx-xxxx form; area code and exchange can't start with 0 or 1.
+export const PHONE_RE = /^[2-9]\d{2}-[2-9]\d{2}-\d{4}$/;
 export function validPhone(phone) {
-  return /^[+()\-.\s\d]{7,24}$/.test(phone) && phone.replace(/\D/g, '').length >= 7;
+  return typeof phone === 'string' && PHONE_RE.test(phone);
 }
 
 export async function verifyTurnstile(token, ip) {

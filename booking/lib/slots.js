@@ -65,3 +65,14 @@ export function upcomingDays(cfg, now = new Date()) {
     return { date: d.toISODate(), dow: d.toFormat('ccc'), num: d.toFormat('d'), month: d.toFormat('LLL'), open: !!cfg.hours[d.weekday] };
   });
 }
+
+// Opening hours for display, Monday first, with today's row flagged.
+export function weeklyHours(cfg, now = new Date()) {
+  const today = DateTime.fromJSDate(now, { zone: cfg.timezone }).weekday;
+  const fmt = (hhmm) => DateTime.fromFormat(hhmm, 'HH:mm').toFormat('h:mm a');
+  const names = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+  return names.map((day, i) => {
+    const hrs = cfg.hours[i + 1];
+    return { day, time: hrs ? `${fmt(hrs[0])} – ${fmt(hrs[1])}` : 'Closed', today: today === i + 1 };
+  });
+}

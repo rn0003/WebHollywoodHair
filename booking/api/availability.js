@@ -1,5 +1,5 @@
 // GET /api/availability?date=YYYY-MM-DD&service=cut
-// Returns start times only, each marked available or not. No calendar details are exposed.
+// Returns only the start times that fit. Taken times and calendar details are never exposed.
 import { config, findService } from '../lib/config.js';
 import { computeSlots, dayRange, isDateInRange } from '../lib/slots.js';
 import { getBusy } from '../lib/calendar.js';
@@ -19,7 +19,9 @@ export default async function handler(req, res) {
   try {
     const { start, end } = dayRange(date, config);
     const busy = await getBusy(start, end, config.timezone);
-    const slots = computeSlots({ date, minutes: service.minutes, busy, cfg: config });
+    const slots = computeSlots({ date, minutes: service.minutes, busy, cfg: config })
+      .filter((s) => s.available)
+      .map(({ start, label }) => ({ start, label }));
     send(res, 200, { date, service: service.id, slots });
   } catch (err) {
     console.error('availability failed:', err.message);

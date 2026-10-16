@@ -30,7 +30,7 @@ export default async function handler(req, res) {
   const stylistIndex = Number.isInteger(body.stylist) ? body.stylist : 0;
   const stylist = config.stylists[stylistIndex];
   const name = cleanText(body.name, 80);
-  const phone = cleanText(body.phone, 24);
+  const phone = typeof body.phone === 'string' ? body.phone.trim() : '';
   const notes = cleanText(body.notes, 300);
   const startIso = String(body.start || '');
   const date = localDateOf(startIso, config);
@@ -38,13 +38,13 @@ export default async function handler(req, res) {
   if (!service) return send(res, 400, { error: 'Please choose a service.' });
   if (!stylist) return send(res, 400, { error: 'Please choose a stylist.' });
   if (name.length < 2) return send(res, 400, { error: 'Please enter your name.' });
-  if (!validPhone(phone)) return send(res, 400, { error: 'Please enter a valid phone number.' });
+  if (!validPhone(phone)) return send(res, 400, { error: 'Please enter your phone number as xxx-xxx-xxxx, e.g. 312-555-0147.' });
   if (!date || !isDateInRange(date, config)) return send(res, 400, { error: 'That time can’t be booked online.' });
 
   try {
-    // Fresh read, no cache: the slot must still be free right now.
+    // Re-read the calendar: the slot must still be free right now.
     const { start: dayStart, end: dayEnd } = dayRange(date, config);
-    const busy = await getBusy(dayStart, dayEnd, config.timezone, { fresh: true });
+    const busy = await getBusy(dayStart, dayEnd, config.timezone);
     const slot = computeSlots({ date, minutes: service.minutes, busy, cfg: config })
       .find((s) => s.start === new Date(startIso).toISOString().replace(/\.\d{3}Z$/, 'Z'));
     if (!slot) return send(res, 400, { error: 'That time isn’t offered. Please pick another.' });
